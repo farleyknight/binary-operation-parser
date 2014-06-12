@@ -31,25 +31,18 @@ natural    = P.natural lexer
 parens     = P.parens lexer
 reservedOp = P.reservedOp lexer
 
-parseExpr parser input = parse parser "" input
-
-parseBinExpr = parseExpr binaryOp
-
 binaryOp = buildExpressionParser table term
 
 term = binOpNatural <|>
        parens binaryOp
 
-binOpNatural = do
-  n <- natural
-  return (Unit n)
+binOpNatural = Unit <$> natural
 
 table = [
   [prefix "-" Negative,          prefix "+" id],
   [binary "*" Product AssocLeft, binary "/" Divide AssocLeft],
   [binary "+" Sum AssocLeft,     binary "-" Difference AssocLeft]
   ]
-
 
 binary  name fun assoc = Infix (do{ reservedOp name; return fun }) assoc
 prefix  name fun       = Prefix (do{ reservedOp name; return fun })
