@@ -49,8 +49,7 @@ name         = P.lexeme lexer name'
 
 binaryOp = buildExpressionParser table term
 
-term = (parens binaryOp)
-       <|> atom
+term = (parens binaryOp) <|> atom
 
 atom = nat <|> var
   where
@@ -77,7 +76,13 @@ runTests = hspec $ do
   describe "Binary operation" $ do
     should "parse * above +" $ do
       (show $ parseBinaryOp "1 * (-3) + 1 * 8") `shouldBe`
-        "Right (Sum (Product (Unit 1) (Negative (Unit 3))) (Product (Unit 1) (Unit 8)))"
+        "Right (Sum (Product (Natural 1) (Negative (Natural 3))) (Product (Natural 1) (Natural 8)))"
     should "parse / above -" $ do
       (show $ parseBinaryOp "1 / (-3) - 1 / 8") `shouldBe`
-        "Right (Difference (Divide (Unit 1) (Negative (Unit 3))) (Divide (Unit 1) (Unit 8)))"
+        "Right (Difference (Divide (Natural 1) (Negative (Natural 3))) (Divide (Natural 1) (Natural 8)))"
+    should "parse variables of name length 1" $ do
+      (show $ parseBinaryOp "a + b + c * d + e") `shouldBe`
+        "Right (Sum (Sum (Sum (Variable \"a\") (Variable \"b\")) (Product (Variable \"c\") (Variable \"d\"))) (Variable \"e\"))"
+    should "parse variables of name length > 1" $ do
+      (show $ parseBinaryOp "abc + xyz") `shouldBe`
+        "Right (Sum (Variable \"abc\") (Variable \"xyz\"))"
